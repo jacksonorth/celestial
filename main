@@ -1,0 +1,116 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+public class CelestialMotionSimulation extends JPanel implements ActionListener {
+    private static final int WIDTH = 800;
+    private static final int HEIGHT = 800;
+    private static final int SUN_SIZE = 40;
+    private static final int EARTH_SIZE = 15;
+    private static final int MOON_SIZE = 5;
+    private static final int EARTH_MOON_DISTANCE = 50;
+    private static final int EARTH_SUN_DISTANCE = 400 * EARTH_MOON_DISTANCE;
+
+    private int dayCounter = 0;
+    private double earthAngle = 0; // Angle in radians
+    private double moonAngle = 0; // Angle in radians
+
+    private Timer timer;
+
+    public CelestialMotionSimulation() {
+        setPreferredSize(new Dimension(WIDTH, HEIGHT));
+        timer = new Timer(50, this);
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        drawSun(g);
+        drawEarth(g);
+        drawMoon(g);
+        drawDayCounter(g);
+    }
+
+    private void drawSun(Graphics g) {
+        g.setColor(Color.YELLOW);
+        g.fillOval(WIDTH / 2 - SUN_SIZE / 2, HEIGHT / 2 - SUN_SIZE / 2, SUN_SIZE, SUN_SIZE);
+    }
+
+    private void drawEarth(Graphics g) {
+        int earthX = (int) (WIDTH / 2 + EARTH_SUN_DISTANCE * Math.cos(earthAngle) - EARTH_SIZE / 2);
+        int earthY = (int) (HEIGHT / 2 + EARTH_SUN_DISTANCE * Math.sin(earthAngle) - EARTH_SIZE / 2);
+        g.setColor(Color.BLUE);
+        g.fillOval(earthX, earthY, EARTH_SIZE, EARTH_SIZE);
+    }
+
+    private void drawMoon(Graphics g) {
+        int moonX = (int) (WIDTH / 2 + EARTH_SUN_DISTANCE * Math.cos(earthAngle) +
+                EARTH_MOON_DISTANCE * Math.cos(moonAngle) - MOON_SIZE / 2);
+        int moonY = (int) (HEIGHT / 2 + EARTH_SUN_DISTANCE * Math.sin(earthAngle) +
+                EARTH_MOON_DISTANCE * Math.sin(moonAngle) - MOON_SIZE / 2);
+        g.setColor(Color.GRAY);
+        g.fillOval(moonX, moonY, MOON_SIZE, MOON_SIZE);
+    }
+
+    private void drawDayCounter(Graphics g) {
+        g.setColor(Color.BLACK);
+        g.drawString("Day: " + dayCounter, 20, 20);
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        earthAngle += 0.01; // Earth's angular velocity
+        moonAngle += 0.1; // Moon's angular velocity (faster for demonstration)
+
+        repaint();
+        dayCounter++;
+    }
+
+    public void play() {
+        timer.start();
+    }
+
+    public void pause() {
+        timer.stop();
+    }
+
+    public void stepForward() {
+        actionPerformed(null);
+    }
+
+    public void stepBackward() {
+        earthAngle -= 0.01;
+        moonAngle -= 0.1;
+
+        repaint();
+        dayCounter--;
+    }
+
+    public static void main(String[] args) {
+        JFrame frame = new JFrame("Celestial Motion Simulation");
+        CelestialMotionSimulation simulation = new CelestialMotionSimulation();
+        frame.add(simulation);
+        frame.pack();
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
+
+        // Controls
+        JPanel controlPanel = new JPanel();
+        JButton playButton = new JButton("Play");
+        JButton pauseButton = new JButton("Pause");
+        JButton stepForwardButton = new JButton("Step Forward");
+        JButton stepBackwardButton = new JButton("Step Backward");
+        controlPanel.add(playButton);
+        controlPanel.add(pauseButton);
+        controlPanel.add(stepForwardButton);
+        controlPanel.add(stepBackwardButton);
+        frame.add(controlPanel, BorderLayout.SOUTH);
+
+        playButton.addActionListener(e -> simulation.play());
+        pauseButton.addActionListener(e -> simulation.pause());
+        stepForwardButton.addActionListener(e -> simulation.stepForward());
+        stepBackwardButton.addActionListener(e -> simulation.stepBackward());
+    }
+}
